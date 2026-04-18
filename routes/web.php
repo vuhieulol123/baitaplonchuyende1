@@ -24,12 +24,23 @@ Route::prefix('cart')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-});
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return view('admin.dashboard');
+    Route::get('/dashboard', function () {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('home');
     })->name('dashboard');
 });
+
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+    });
 
 require __DIR__ . '/auth.php';

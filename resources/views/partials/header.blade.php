@@ -16,7 +16,7 @@
                 </li>
 
                 @auth
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->role === 'admin')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">Quản trị</a>
                         </li>
@@ -34,7 +34,12 @@
 
                 @auth
                     <span class="fw-semibold">{{ auth()->user()->name }}</span>
-                    <form action="{{ route('logout') }}" method="POST">
+
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-primary">Admin</a>
+                    @endif
+
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
                         <button class="btn btn-danger">Đăng xuất</button>
                     </form>

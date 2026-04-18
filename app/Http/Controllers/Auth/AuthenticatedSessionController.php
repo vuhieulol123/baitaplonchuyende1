@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Hiển thị form đăng nhập.
      */
     public function create(): View
     {
@@ -20,7 +20,7 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Xử lý đăng nhập.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -28,11 +28,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('home');
     }
 
     /**
-     * Destroy an authenticated session.
+     * Đăng xuất.
      */
     public function destroy(Request $request): RedirectResponse
     {
