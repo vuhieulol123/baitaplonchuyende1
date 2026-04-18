@@ -11,33 +11,20 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Xử lý đăng nhập.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        if (auth()->user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->route('home');
+        return redirect()->intended(route('dashboard'));
     }
 
-    /**
-     * Đăng xuất.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

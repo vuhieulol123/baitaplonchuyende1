@@ -69,7 +69,7 @@
     @forelse($product->reviews as $review)
         <div class="border-bottom pb-3 mb-3">
             <strong>{{ $review->user->name ?? 'Người dùng' }}</strong>
-            <div>⭐ {{ $review->rating }}/5</div>
+            <div>&#9733; {{ $review->rating }}/5</div>
             <p class="mb-0">{{ $review->comment }}</p>
         </div>
     @empty
