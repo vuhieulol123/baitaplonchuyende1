@@ -3,9 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ShopController;
+use App\Http\Controllers\Account\OrderController as AccountOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -25,9 +27,10 @@ Route::prefix('cart')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/checkout/qr/{order}', [CheckoutController::class, 'qr'])->name('checkout.qr');
+
+    Route::get('/my-orders', [AccountOrderController::class, 'index'])->name('account.orders.index');
+    Route::get('/my-orders/{order}', [AccountOrderController::class, 'show'])->name('account.orders.show');
 
     Route::get('/dashboard', function () {
         if (auth()->user()->role === 'admin') {
@@ -42,9 +45,8 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::resource('products', AdminProductController::class);
     });
 
 require __DIR__ . '/auth.php';

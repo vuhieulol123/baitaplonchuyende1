@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | VietQR Payment Config
+    |--------------------------------------------------------------------------
+    */
+
+    'vietqr' => [
+        'bank_id' => env('VIETQR_BANK_ID', '970422'),
+        'account_no' => env('VIETQR_ACCOUNT_NO', ''),
+        'account_name' => env('VIETQR_ACCOUNT_NAME', ''),
+    ],
+
 ];

@@ -16,9 +16,16 @@
                 </li>
 
                 @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('account.orders.index') }}">Đơn hàng của tôi</a>
+                    </li>
+
                     @if(auth()->user()->role === 'admin')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Quản trị</a>
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.products.index') }}">Quản lý sản phẩm</a>
                         </li>
                     @endif
                 @endauth

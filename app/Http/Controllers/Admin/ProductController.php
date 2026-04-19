@@ -3,63 +3,142 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Product::with(['category', 'brand'])->latest();
+
+        if ($request->filled('keyword')) {
+            $query->where('name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $products = $query->paginate(10)->withQueryString();
+
+        return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $categories = Category::where('status', true)->get();
+        $brands = Brand::where('status', true)->get();
+
+        return view('admin.products.create', compact('categories', 'brands'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku',
+            'short_description' => 'nullable|string',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gender' => 'required|in:male,female,unisex',
+            'material' => 'nullable|string|max:255',
+            'stock' => 'required|integer|min:0',
+            'status' => 'required|boolean',
+            'is_featured' => 'required|boolean',
+        ]);
+
+        $thumbnailPath = null;
+
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('products', 'public');
+        }
+
+        Product::create([
+            'category_id' => $request->category_id,
+            'brand_id' => $request->brand_id,
+            'name' => $request->name,
+            'slug' => Str::slug($request->name . '-' . Str::random(5)),
+            'sku' => $request->sku,
+            'short_description' => $request->short_description,
+            'description' => $request->description,
+            'price' => $request->price,
+            'sale_price' => $request->sale_price,
+            'thumbnail' => $thumbnailPath ? asset('storage/' . $thumbnailPath) : null,
+            'gender' => $request->gender,
+            'material' => $request->material,
+            'stock' => $request->stock,
+            'status' => $request->status,
+            'is_featured' => $request->is_featured,
+            'view_count' => 0,
+        ]);
+
+        return redirect()->route('admin.products.index')->with('success', 'Thêm sản phẩm thành công.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Product $product)
     {
-        //
+        $categories = Category::where('status', true)->get();
+        $brands = Brand::where('status', true)->get();
+
+        return view('admin.products.edit', compact('product', 'categories', 'brands'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku,' . $product->id,
+            'short_description' => 'nullable|string',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gender' => 'required|in:male,female,unisex',
+            'material' => 'nullable|string|max:255',
+            'stock' => 'required|integer|min:0',
+            'status' => 'required|boolean',
+            'is_featured' => 'required|boolean',
+        ]);
+
+        $thumbnailUrl = $product->thumbnail;
+
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('products', 'public');
+            $thumbnailUrl = asset('storage/' . $path);
+        }
+
+        $product->update([
+            'category_id' => $request->category_id,
+            'brand_id' => $request->brand_id,
+            'name' => $request->name,
+            'slug' => Str::slug($request->name . '-' . Str::random(5)),
+            'sku' => $request->sku,
+            'short_description' => $request->short_description,
+            'description' => $request->description,
+            'price' => $request->price,
+            'sale_price' => $request->sale_price,
+            'thumbnail' => $thumbnailUrl,
+            'gender' => $request->gender,
+            'material' => $request->material,
+            'stock' => $request->stock,
+            'status' => $request->status,
+            'is_featured' => $request->is_featured,
+        ]);
+
+        return redirect()->route('admin.products.index')->with('success', 'Cập nhật sản phẩm thành công.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Product $product)
     {
-        //
-    }
+        $product->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('admin.products.index')->with('success', 'Xóa sản phẩm thành công.');
     }
 }
