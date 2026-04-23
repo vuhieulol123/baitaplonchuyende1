@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
@@ -31,7 +33,10 @@ class Product extends Model
         'view_count',
     ];
 
-    protected $appends = ['final_price'];
+    protected $appends = [
+        'final_price',
+        'promotion_percent',
+    ];
 
     protected function casts(): array
     {
@@ -68,8 +73,55 @@ class Product extends Model
         return $this->hasMany(Review::class)->latest();
     }
 
-    public function getFinalPriceAttribute(): float
+    public function promotions(): BelongsToMany
     {
-        return (float) ($this->sale_price && $this->sale_price > 0 ? $this->sale_price : $this->price);
+        return $this->belongsToMany(Promotion::class, 'promotion_product');
     }
+
+    public function getPromotionPercentAttribute(): float
+    {
+        $today = Carbon::today();
+
+        $productPromotion = $this->promotions()
+            ->where('status', true)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderByDesc('discount_percent')
+            ->first();
+
+        $categoryPromotion = Promotion::where('status', true)
+            ->where('apply_type', 'category')
+            ->where('category_id', $this->category_id)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderByDesc('discount_percent')
+            ->first();
+
+        $allPromotion = Promotion::where('status', true)
+            ->where('apply_type', 'all')
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderByDesc('discount_percent')
+            ->first();
+
+        $percents = collect([
+            $productPromotion?->discount_percent,
+            $categoryPromotion?->discount_percent,
+            $allPromotion?->discount_percent,
+        ])->filter();
+
+        return (float) ($percents->max() ?? 0);
+    }
+
+   public function getFinalPriceAttribute(): float
+{
+    $basePrice = (float) $this->price;
+    $promotionPercent = (float) $this->promotion_percent;
+
+    if ($promotionPercent > 0) {
+        return (float) ($basePrice - ($basePrice * $promotionPercent / 100));
+    }
+
+    return $basePrice;
+}
 }

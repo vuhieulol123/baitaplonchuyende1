@@ -1,44 +1,45 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Admin Dashboard')
+@section('page_title', 'Dashboard quản trị')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">Trang quản trị</h1>
+        <h1 class="fw-bold mb-0">Trang quản trị</h1>
         <a href="{{ route('admin.products.index') }}" class="btn btn-dark">Quản lý sản phẩm</a>
     </div>
 
     <div class="row">
         <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card stat-card p-4">
                 <h5>Tổng sản phẩm</h5>
                 <p class="display-6 fw-bold">{{ $totalProducts }}</p>
             </div>
         </div>
 
         <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card stat-card p-4">
                 <h5>Tổng đơn hàng</h5>
                 <p class="display-6 fw-bold">{{ $totalOrders }}</p>
             </div>
         </div>
 
         <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card stat-card p-4">
                 <h5>Khách hàng</h5>
                 <p class="display-6 fw-bold">{{ $totalCustomers }}</p>
             </div>
         </div>
 
         <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card stat-card p-4">
                 <h5>Doanh thu</h5>
                 <p class="display-6 fw-bold text-danger">{{ number_format($totalRevenue, 0, ',', '.') }} đ</p>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mt-3">
+    <div class="card stat-card p-4 mt-3">
         <h4 class="fw-bold mb-3">Đơn hàng gần đây</h4>
 
         <div class="table-responsive">

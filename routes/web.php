@@ -6,8 +6,11 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ShopController;
 use App\Http\Controllers\Account\OrderController as AccountOrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -46,7 +49,15 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::put('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
         Route::resource('products', AdminProductController::class);
+        Route::resource('promotions', AdminPromotionController::class);
     });
 
 require __DIR__ . '/auth.php';

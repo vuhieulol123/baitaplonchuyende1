@@ -103,7 +103,7 @@ class CheckoutController extends Controller
                 'total_amount' => $totalAmount,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $paymentStatus,
-                'order_status' => 'pending',
+                'order_status' => 'dang_xu_ly',
                 'coupon_code' => null,
             ]);
 

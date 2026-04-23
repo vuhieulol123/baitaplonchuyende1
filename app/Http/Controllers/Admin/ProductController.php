@@ -7,7 +7,6 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -44,19 +43,15 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'thumbnail' => 'nullable|url|max:2048',
             'gender' => 'required|in:male,female,unisex',
             'material' => 'nullable|string|max:255',
             'stock' => 'required|integer|min:0',
             'status' => 'required|boolean',
             'is_featured' => 'required|boolean',
+        ], [
+            'thumbnail.url' => 'Link ảnh không hợp lệ.',
         ]);
-
-        $thumbnailPath = null;
-
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('products', 'public');
-        }
 
         Product::create([
             'category_id' => $request->category_id,
@@ -68,7 +63,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
-            'thumbnail' => $thumbnailPath ? asset('storage/' . $thumbnailPath) : null,
+            'thumbnail' => $request->thumbnail,
             'gender' => $request->gender,
             'material' => $request->material,
             'stock' => $request->stock,
@@ -99,20 +94,15 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'thumbnail' => 'nullable|url|max:2048',
             'gender' => 'required|in:male,female,unisex',
             'material' => 'nullable|string|max:255',
             'stock' => 'required|integer|min:0',
             'status' => 'required|boolean',
             'is_featured' => 'required|boolean',
+        ], [
+            'thumbnail.url' => 'Link ảnh không hợp lệ.',
         ]);
-
-        $thumbnailUrl = $product->thumbnail;
-
-        if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('products', 'public');
-            $thumbnailUrl = asset('storage/' . $path);
-        }
 
         $product->update([
             'category_id' => $request->category_id,
@@ -124,7 +114,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
-            'thumbnail' => $thumbnailUrl,
+            'thumbnail' => $request->thumbnail,
             'gender' => $request->gender,
             'material' => $request->material,
             'stock' => $request->stock,

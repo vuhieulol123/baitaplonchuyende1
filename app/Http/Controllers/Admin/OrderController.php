@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Account;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -10,22 +10,48 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with('items')
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+        $query = Order::with('items')->latest();
 
-        return view('account.orders.index', compact('orders'));
+        if ($request->filled('keyword')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('order_code', 'like', '%' . $request->keyword . '%')
+                  ->orWhere('customer_name', 'like', '%' . $request->keyword . '%')
+                  ->orWhere('customer_phone', 'like', '%' . $request->keyword . '%');
+            });
+        }
+
+        if ($request->filled('order_status')) {
+            $query->where('order_status', $request->order_status);
+        }
+
+        $orders = $query->paginate(10)->withQueryString();
+
+        return view('admin.orders.index', compact('orders'));
     }
 
     public function show(Order $order)
     {
-        if (!auth()->check() || $order->user_id !== auth()->id()) {
-            abort(403, 'Bạn không có quyền xem đơn hàng này.');
+        $order->load(['items.product', 'user']);
+
+        return view('admin.orders.show', compact('order'));
+    }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'order_status' => 'required|in:dang_xu_ly,dang_van_chuyen,da_nhan_thanh_cong',
+        ]);
+
+        $order->order_status = $request->order_status;
+
+        if ($request->order_status === 'da_nhan_thanh_cong') {
+            $order->payment_status = 'paid';
         }
 
-        $order->load(['items.product']);
+        $order->save();
 
-        return view('account.orders.show', compact('order'));
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
 }

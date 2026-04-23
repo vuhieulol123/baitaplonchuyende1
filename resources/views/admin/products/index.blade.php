@@ -1,10 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Quản lý sản phẩm')
+@section('page_title', 'Quản lý sản phẩm')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">Quản lý sản phẩm</h1>
+        <h1 class="fw-bold mb-0">Quản lý sản phẩm</h1>
         <a href="{{ route('admin.products.create') }}" class="btn btn-success">+ Thêm sản phẩm</a>
     </div>
 
@@ -26,7 +27,9 @@
                         <th>Tên</th>
                         <th>Danh mục</th>
                         <th>Thương hiệu</th>
-                        <th>Giá</th>
+                        <th>Giá gốc</th>
+                        <th>Khuyến mãi</th>
+                        <th>Giá sau KM</th>
                         <th>Tồn kho</th>
                         <th>Trạng thái</th>
                         <th>Nổi bật</th>
@@ -38,14 +41,25 @@
                         <tr>
                             <td>
                                 @if($product->thumbnail)
-                                    <img src="{{ $product->thumbnail }}" width="70" class="rounded-3">
+                                    <img src="{{ $product->thumbnail }}" width="70" class="rounded-3"
+                                         onerror="this.src='https://via.placeholder.com/70x70?text=No+Image'">
                                 @else
-                                    Không ảnh
+                                    <img src="https://via.placeholder.com/70x70?text=No+Image" width="70" class="rounded-3">
                                 @endif
                             </td>
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->category->name ?? '' }}</td>
                             <td>{{ $product->brand->name ?? '' }}</td>
+                            <td>{{ number_format($product->price, 0, ',', '.') }} đ</td>
+                            <td>
+                                @if($product->promotion_percent > 0)
+                                    <span class="badge bg-danger">
+                                        -{{ rtrim(rtrim(number_format($product->promotion_percent, 2, '.', ''), '0'), '.') }}%
+                                    </span>
+                                @else
+                                    <span class="badge bg-secondary">Không có</span>
+                                @endif
+                            </td>
                             <td class="text-danger fw-bold">{{ number_format($product->final_price, 0, ',', '.') }} đ</td>
                             <td>{{ $product->stock }}</td>
                             <td>
@@ -74,7 +88,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center">Chưa có sản phẩm nào.</td>
+                            <td colspan="11" class="text-center">Chưa có sản phẩm nào.</td>
                         </tr>
                     @endforelse
                 </tbody>
